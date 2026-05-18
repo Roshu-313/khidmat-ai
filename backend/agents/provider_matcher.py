@@ -74,6 +74,20 @@ class ProviderMatcherAgent:
                 selection_reasoning=reasoning
             ))
 
+        if not providers:
+            self.tracer.log(
+                agent_name="ProviderMatcherAgent",
+                input_data={"service": intent.service_category, "location": intent.location,
+                            "complexity": complexity.level, "budget": intent.budget_sensitivity},
+                output_data={"total_found": len(raw), "ranked": 0,
+                             "winner": None, "winner_score": None},
+                reasoning=f"Fetched {len(raw)} {intent.service_category} providers, but none could be ranked.",
+                decision="No providers available to match.",
+                confidence=0.0,
+                start_time=start
+            )
+            return []
+
         best = providers[0]
         self.tracer.log(
             agent_name="ProviderMatcherAgent",
@@ -109,7 +123,7 @@ class ProviderMatcherAgent:
         f4 = 0.0 if provider_rank >= job_complexity_rank else 0.5
 
         # Factor 5: Availability (capacity check)
-        capacity_used = p["jobs_today"] / max(p["capacity"], 1)
+        capacity_used = p["jobs_today"] / max(p.get("capacity", 5), 1)
         cancellation_penalty = float(p["cancellation_rate"]) * 2
         f5 = capacity_used * 0.5 + cancellation_penalty * 0.5
 

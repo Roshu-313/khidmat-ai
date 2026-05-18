@@ -32,15 +32,14 @@ Rules:
 - complex: expert skills, special tools, >3hrs (AC compressor, boiler work, complete rewiring)
 - Use special_notes to refine: "bilkul kaam nahi" = likely complex
 """
-        response = self.model.generate_content(prompt)
-        text = response.text.strip().replace("```json","").replace("```","").strip()
-
         try:
+            response = self.model.generate_content(prompt)
+            text = response.text.strip().replace("```json","").replace("```","").strip()
             data = json.loads(text)
-        except:
-            data = {"level": "intermediate", "reasoning": "Default classification applied",
-                    "required_skills": ["general"], "estimated_duration_hours": 2.0,
-                    "tools_required": ["standard toolkit"]}
+        except json.JSONDecodeError:
+            data = self._fallback(intent)
+        except Exception:
+            data = self._fallback(intent)
 
         result = JobComplexity(**data)
 
@@ -56,3 +55,12 @@ Rules:
             start_time=start
         )
         return result
+
+    def _fallback(self, intent: ParsedIntent) -> dict:
+        return {
+            "level": "intermediate",
+            "reasoning": "Default classification applied due to parsing failure",
+            "required_skills": ["general"],
+            "estimated_duration_hours": 2.0,
+            "tools_required": ["standard toolkit"]
+        }

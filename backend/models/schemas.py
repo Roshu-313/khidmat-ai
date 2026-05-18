@@ -116,6 +116,7 @@ class AgentLog(BaseModel):
     decision: str 
     confidence: float 
     execution_time_ms: int 
+    status: str = "success"
     fallback_triggered: bool = False 
     fallback_reason: Optional[str] = None 
  

@@ -2,11 +2,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-// Change to your Railway URL after deploy
 const String baseUrl = 'http://127.0.0.1:8000';
-// For local test: 'http://10.0.2.2:8000'
 
 class ApiService {
+  static String get apiBaseUrl => baseUrl;
+
   static Future<Map<String, dynamic>> processRequest(String input,
       {String name = 'Guest', String? phone}) async {
     final res = await http.post(

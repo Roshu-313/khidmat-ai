@@ -24,6 +24,10 @@ class KhidmatApp extends StatelessWidget {
       ),
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: kPrimary),
+        fontFamily: GoogleFonts.poppins().fontFamily,
+        fontFamilyFallback: [
+          GoogleFonts.notoSansArabic().fontFamily!,
+        ],
         textTheme: GoogleFonts.poppinsTextTheme(),
         useMaterial3: true,
         scaffoldBackgroundColor: kBackground,

@@ -73,7 +73,6 @@ class _AgentStepTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Timeline line + icon
           Column(children: [
             Container(
               width: 32, height: 32,
@@ -96,14 +95,12 @@ class _AgentStepTile extends StatelessWidget {
                   ? const Icon(Icons.check, size: 16, color: Colors.white)
                   : Text(_agentEmoji, style: const TextStyle(fontSize: 14))),
             ),
-            if (index < 5) // connector line
+            if (index < 5)
               Container(width: 2, height: 20,
                 color: step.status == AgentStatus.done
                   ? _agentColor.withValues(alpha: 0.5) : Colors.white12),
           ]),
           const SizedBox(width: 12),
-
-          // Content
           Expanded(child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -132,7 +129,7 @@ class _AgentStepTile extends StatelessWidget {
                         fontWeight: FontWeight.bold))),
               ]),
               const SizedBox(height: 2),
-              Text(step.message,
+              Text(step.stepMessage,
                 style: TextStyle(
                   color: step.status == AgentStatus.pending
                     ? Colors.white24 : Colors.white60,
@@ -147,39 +144,53 @@ class _AgentStepTile extends StatelessWidget {
   }
 
   List<Widget> _buildResult(AgentStep step) {
-    final result = step.result!;
+    final result = step.result;
+    if (result == null) return [];
     String summary = '';
 
     switch (step.agentName) {
       case 'IntentParserAgent':
-        summary = '${result['service_type']} · ${result['location']} · '
-                  '${result['urgency']} urgency · '
-                  '${((result['confidence'] ?? 0.9) * 100).toInt()}% confidence';
+        if (result is Map) {
+          summary = '${result['service_type']} · ${result['location']} · '
+                    '${result['urgency']} urgency · '
+                    '${((result['confidence'] ?? 0.9) * 100).toInt()}% confidence';
+        }
         break;
       case 'ComplexityClassifierAgent':
-        summary = '${result['level']?.toString().toUpperCase()} job · '
-                  '~${result['estimated_duration_hours']}hrs';
+        if (result is Map) {
+          summary = '${result['level']?.toString().toUpperCase()} job · '
+                    '~${result['estimated_duration_hours']}hrs';
+        }
         break;
       case 'ProviderMatcherAgent':
-        final providers = result as List?;
-        summary = providers != null && providers.isNotEmpty
-          ? '${providers[0]['name']} selected · '
-            '${providers[0]['distance_km']}km · '
-            '${providers[0]['rating']}★'
-          : 'No providers found';
+        if (result is List && result.isNotEmpty && result[0] is Map) {
+          final p = result[0] as Map;
+          summary = '${p['name']} selected · '
+                    '${p['distance_km']}km · '
+                    '${p['rating']}★';
+        } else {
+          summary = 'No providers found';
+        }
         break;
       case 'SchedulingAgent':
-        summary = '${result['date']} at ${result['time']} · '
-                  '${result['travel_buffer_minutes']}min buffer';
+        if (result is Map) {
+          summary = '${result['date']} at ${result['time']} · '
+                    '${result['travel_buffer_minutes']}min buffer';
+        }
         break;
       case 'PricingAgent':
-        summary = 'PKR ${result['total_price']} · '
-                  '×${result['demand_multiplier']} demand';
+        if (result is Map) {
+          summary = 'PKR ${result['total_price']} · '
+                    '×${result['demand_multiplier']} demand';
+        }
         break;
       case 'BookingAgent':
-        summary = '${result['booking_code']} CONFIRMED ✓';
+        if (result is Map) {
+          summary = '${result['booking_code']} CONFIRMED ✓';
+        }
         break;
     }
+    if (summary.isEmpty) return [];
 
     return [
       const SizedBox(height: 4),
@@ -196,21 +207,20 @@ class _AgentStepTile extends StatelessWidget {
   }
 }
 
-// Data model
 enum AgentStatus { pending, running, done, error }
 
 class AgentStep {
   final String agentName;
-  final String message;
+  String stepMessage;
   AgentStatus status;
-  Map<String, dynamic>? result;
+  Object? result;
   int? durationMs;
 
   AgentStep({
     required this.agentName,
-    required this.message,
+    required String message,
     this.status = AgentStatus.pending,
     this.result,
     this.durationMs,
-  });
+  }) : stepMessage = message;
 }

@@ -1,3 +1,12 @@
+---
+title: Khidmat AI
+emoji: 🚀
+colorFrom: blue
+colorTo: green
+sdk: docker
+pinned: false
+---
+
 # Khidmat AI v2.0 🏠
 ### AISeekho2026 Antigravity Hackathon | Challenge 2: AI Service Orchestrator
 > خدمت — A fully agentic service orchestrator that takes a messy real-world request in Urdu/Roman Urdu/English and autonomously handles matching, pricing, booking, follow-up, and dispute resolution end to end.
